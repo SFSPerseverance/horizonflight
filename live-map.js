@@ -215,8 +215,8 @@ function createAircraftIcon(heading) {
     return L.divIcon({
         className: 'aircraft-marker',
         html: `
-            <div style="transform: rotate(${heading}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-fighter-jet" style="color: #64b5f6; font-size: 18px;"></i>
+            <div style="transform: rotate(${heading - 90}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-plane" style="color: #64b5f6; font-size: 18px;"></i>
             </div>
         `,
         iconSize: [24, 24],
