@@ -94,7 +94,7 @@ function initializeMap() {
 function initializeWebSocket() {
     // Determine WebSocket URL based on current location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `https://horizon-backend-4f8h.onrender.com`;
+    const wsUrl = `${protocol}//horizon-backend-4f8h.onrender.com/ws/aircraft`;
     
     console.log('Connecting to aircraft tracking:', wsUrl);
     
