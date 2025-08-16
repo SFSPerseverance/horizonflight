@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Map - Horizon Flight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="live-map.css">
+    <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="shortcut icon" href="assets/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="manifest" href="assets/site.webmanifest" />
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-plane"></i>
+                    <span class="logo-text">Horizon Flight</span>
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="index.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-id-badge"></i>
+                    <span class="menu-text">Pilot Profile</span>
+                </a>
+                <a href="live-map.html" class="menu-item active">
+                    <i class="fas fa-map"></i>
+                    <span class="menu-text">Live Map</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-route"></i>
+                    <span class="menu-text">Plan a Flight</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-text">Settings</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-text">Help</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Live Flight Map</h1>
+                <div class="map-controls">
+                </div>
+            </header>
+
+            <div class="map-container">
+                <div id="liveMap"></div>
+
+                <!-- Map Info Panel -->
+                <!-- <div class="map-info-panel" id="mapInfoPanel">
+                    <div class="info-header">
+                        <h3><i class="fas fa-info-circle"></i> Map Information</h3>
+                        <button class="toggle-info" id="toggleInfoBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <span class="info-label">Zoom Level:</span>
+                            <span class="info-value" id="zoomLevel">3</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Center:</span>
+                            <span class="info-value" id="mapCenter">Loading...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Map Source:</span>
+                            <span class="info-value">OpenStreetMap</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Theme:</span>
+                            <span class="info-value">Dark Mode</span>
+                        </div>
+                    </div>
+                </div> -->
+
+                <!-- Loading Overlay -->
+                <div class="map-loading" id="mapLoading">
+                    <div class="loading-content">
+                        <i class="fas fa-plane loading-icon"></i>
+                        <span>Loading Map Data...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="live-map.js"></script>
+</body>
+
+</html>
