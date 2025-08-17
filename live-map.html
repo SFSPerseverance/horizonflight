@@ -19,6 +19,9 @@
 <body>
     <div class="particles" id="particles"></div>
 
+    <!-- Sidebar Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="container">
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -57,6 +60,9 @@
 
         <main class="main-content">
             <header class="header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h1>Live Flight Map</h1>
                 <div class="map-controls">
                 </div>
@@ -64,34 +70,6 @@
 
             <div class="map-container">
                 <div id="liveMap"></div>
-
-                <!-- Map Info Panel -->
-                <!-- <div class="map-info-panel" id="mapInfoPanel">
-                    <div class="info-header">
-                        <h3><i class="fas fa-info-circle"></i> Map Information</h3>
-                        <button class="toggle-info" id="toggleInfoBtn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-item">
-                            <span class="info-label">Zoom Level:</span>
-                            <span class="info-value" id="zoomLevel">3</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Center:</span>
-                            <span class="info-value" id="mapCenter">Loading...</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Map Source:</span>
-                            <span class="info-value">OpenStreetMap</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Theme:</span>
-                            <span class="info-value">Dark Mode</span>
-                        </div>
-                    </div>
-                </div> -->
 
                 <!-- Loading Overlay -->
                 <div class="map-loading" id="mapLoading">
@@ -102,6 +80,36 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Aircraft Details Panel -->
+    <div class="aircraft-panel" id="aircraftPanel">
+        <div class="drag-handle"></div>
+        <div class="aircraft-panel-header">
+            <div class="aircraft-panel-title">
+                <i class="fas fa-plane"></i>
+                <span id="panelAircraftTitle">Aircraft Details</span>
+            </div>
+            <div class="panel-controls">
+                <button class="panel-btn" id="fullscreenPanelBtn" style="display: none;">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="panel-btn" id="closePanelBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="aircraft-panel-content">
+            <div class="aircraft-info" id="aircraftInfo">
+                <div class="aircraft-avatar">
+                    <div class="aircraft-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <div class="aircraft-callsign" id="aircraftCallsign">Select an aircraft</div>
+                    <div class="aircraft-type" id="aircraftType">Click on an aircraft marker to view details</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>

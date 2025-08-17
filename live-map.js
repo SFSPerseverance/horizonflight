@@ -2,6 +2,7 @@
 let map;
 let isFullscreen = false;
 let userLocationMarker = null;
+let selectedAircraft = null;
 
 // Aircraft tracking variables
 let aircraftMarkers = new Map();
@@ -10,12 +11,19 @@ let reconnectAttempts = 0;
 let maxReconnectAttempts = 5;
 let reconnectTimeout = null;
 
+// Mobile functionality
+let touchStartX = 0;
+let touchStartY = 0;
+let isDragging = false;
+
 // Initialize the map when page loads
 document.addEventListener('DOMContentLoaded', () => {
     initializeMap();
     initializeControls();
     initializeParticles();
     initializeSidebar();
+    initializeMobileControls();
+    initializeAircraftPanel();
 });
 
 function initializeMap() {
@@ -87,6 +95,260 @@ function initializeMap() {
                 maximumAge: 600000
             }
         );
+    }
+}
+
+function initializeMobileControls() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (!mobileMenuBtn) return; // Exit if mobile menu button doesn't exist
+
+    // Mobile menu button
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.add('mobile-open');
+        sidebarOverlay.classList.add('active');
+    });
+
+    // Close sidebar when clicking overlay
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+    });
+
+    // Swipe to open sidebar
+    let startX = 0;
+    let currentX = 0;
+    let isSwipeActive = false;
+
+    document.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.aircraft-panel')) return; // Don't interfere with panel
+        startX = e.touches[0].clientX;
+        isSwipeActive = startX < 50; // Only activate swipe near left edge
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isSwipeActive || e.target.closest('.aircraft-panel')) return;
+        currentX = e.touches[0].clientX;
+        const diff = currentX - startX;
+        
+        if (diff > 50) { // Swipe right threshold
+            sidebar.classList.add('mobile-open');
+            sidebarOverlay.classList.add('active');
+            isSwipeActive = false;
+        }
+    }, { passive: true });
+
+    // Close sidebar with menu items on mobile
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+    });
+}
+
+function initializeAircraftPanel() {
+    const panel = document.getElementById('aircraftPanel');
+    const closeBtn = document.getElementById('closePanelBtn');
+    const fullscreenBtn = document.getElementById('fullscreenPanelBtn');
+    const dragHandle = panel.querySelector('.drag-handle');
+
+    if (!panel) return; // Exit if panel doesn't exist
+
+    // Show fullscreen button on mobile
+    if (window.innerWidth <= 768) {
+        fullscreenBtn.style.display = 'block';
+    }
+
+    closeBtn.addEventListener('click', closeAircraftPanel);
+    
+    fullscreenBtn.addEventListener('click', () => {
+        panel.classList.toggle('fullscreen');
+        const icon = fullscreenBtn.querySelector('i');
+        if (panel.classList.contains('fullscreen')) {
+            icon.className = 'fas fa-compress';
+        } else {
+            icon.className = 'fas fa-expand';
+        }
+    });
+
+    // Mobile drag functionality
+    let startY = 0;
+    let currentY = 0;
+    let initialHeight = 0;
+    let panelHeight = 0;
+
+    const handleTouchStart = (e) => {
+        startY = e.touches[0].clientY;
+        const rect = panel.getBoundingClientRect();
+        initialHeight = window.innerHeight - rect.top;
+        isDragging = true;
+        panel.style.transition = 'none';
+        e.stopPropagation();
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        e.stopPropagation();
+        
+        currentY = e.touches[0].clientY;
+        const diff = startY - currentY;
+        panelHeight = Math.max(200, Math.min(window.innerHeight - 100, initialHeight + diff));
+        
+        if (window.innerWidth <= 768) {
+            panel.style.height = `${panelHeight}px`;
+            panel.style.bottom = '0px';
+        }
+    };
+
+    const handleTouchEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        panel.style.transition = 'all 0.3s ease';
+        e.stopPropagation();
+
+        // Snap to positions
+        const threshold = window.innerHeight * 0.3;
+        if (panelHeight < threshold) {
+            closeAircraftPanel();
+        } else if (panelHeight > window.innerHeight * 0.8) {
+            panel.classList.add('fullscreen');
+            panel.style.height = '';
+        } else {
+            panel.classList.remove('fullscreen');
+            panel.style.height = '60vh';
+        }
+    };
+
+    dragHandle.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        const isMobile = window.innerWidth <= 768;
+        fullscreenBtn.style.display = isMobile ? 'block' : 'none';
+        
+        if (!isMobile) {
+            panel.classList.remove('fullscreen');
+            panel.style.height = '';
+        }
+    });
+}
+
+function showAircraftDetails(aircraft) {
+    selectedAircraft = aircraft;
+    const panel = document.getElementById('aircraftPanel');
+    const callsign = document.getElementById('aircraftCallsign');
+    const type = document.getElementById('aircraftType');
+    const title = document.getElementById('panelAircraftTitle');
+    const info = document.getElementById('aircraftInfo');
+
+    if (!panel) return;
+
+    // Update header
+    title.textContent = aircraft.callsign || aircraft.id;
+    callsign.textContent = aircraft.callsign || aircraft.id;
+    type.textContent = aircraft.aircraft_type || 'Unknown Aircraft';
+
+    // Create detailed info sections
+    const altitude = aircraft.altitude ? Math.round(aircraft.altitude) : 'Unknown';
+    const speed = aircraft.speed ? Math.round(aircraft.speed) : 'Unknown';
+    const heading = aircraft.heading ? Math.round(aircraft.heading) : 'Unknown';
+
+    // Clear existing content and rebuild
+    info.innerHTML = `
+        <div class="aircraft-avatar">
+            <div class="aircraft-icon">
+                <i class="fas fa-plane"></i>
+            </div>
+            <div class="aircraft-callsign">${aircraft.callsign || aircraft.id}</div>
+            <div class="aircraft-type">${aircraft.aircraft_type || 'Unknown Aircraft'}</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Flight Data
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Altitude</div>
+                    <div class="info-value">${altitude}<span class="info-unit"> ft</span></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Speed</div>
+                    <div class="info-value">${speed}<span class="info-unit"> kts</span></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Heading</div>
+                    <div class="info-value">${heading}<span class="info-unit">°</span></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Squawk</div>
+                    <div class="info-value">${aircraft.squawk || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title">
+                <i class="fas fa-map-marker-alt"></i>
+                Position
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Latitude</div>
+                    <div class="info-value">${aircraft.latitude ? aircraft.latitude.toFixed(4) : 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Longitude</div>
+                    <div class="info-value">${aircraft.longitude ? aircraft.longitude.toFixed(4) : 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title">
+                <i class="fas fa-info-circle"></i>
+                Aircraft Info
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Registration</div>
+                    <div class="info-value">${aircraft.registration || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Origin</div>
+                    <div class="info-value">${aircraft.origin || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Destination</div>
+                    <div class="info-value">${aircraft.destination || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Flight Number</div>
+                    <div class="info-value">${aircraft.flight || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Show the panel
+    panel.classList.add('open');
+}
+
+function closeAircraftPanel() {
+    const panel = document.getElementById('aircraftPanel');
+    if (panel) {
+        panel.classList.remove('open', 'fullscreen');
+        panel.style.height = '';
+        selectedAircraft = null;
     }
 }
 
@@ -193,6 +455,11 @@ function updateAircraft(aircraftArray) {
             
             // Update popup content
             marker.bindPopup(createAircraftPopup(aircraft));
+            
+            // Update panel if this aircraft is selected
+            if (selectedAircraft && selectedAircraft.id === aircraft.id) {
+                showAircraftDetails(aircraft);
+            }
         } else {
             // Create new aircraft marker
             const aircraftIcon = createAircraftIcon(aircraft.heading);
@@ -203,6 +470,12 @@ function updateAircraft(aircraftArray) {
             }).addTo(map);
             
             marker.bindPopup(createAircraftPopup(aircraft));
+            
+            // Add click event to show details panel
+            marker.on('click', () => {
+                showAircraftDetails(aircraft);
+            });
+            
             aircraftMarkers.set(aircraft.id, marker);
             
             console.log('Added new aircraft:', aircraft.callsign || aircraft.id);
@@ -231,6 +504,12 @@ function removeAircraft(aircraftId) {
         const marker = aircraftMarkers.get(aircraftId);
         map.removeLayer(marker);
         aircraftMarkers.delete(aircraftId);
+        
+        // Close panel if removed aircraft was selected
+        if (selectedAircraft && selectedAircraft.id === aircraftId) {
+            closeAircraftPanel();
+        }
+        
         console.log('Removed aircraft:', aircraftId);
     }
 }
@@ -241,6 +520,7 @@ function clearAllAircraft() {
         map.removeLayer(marker);
     });
     aircraftMarkers.clear();
+    closeAircraftPanel(); // Close panel when clearing all aircraft
     console.log('Cleared all aircraft markers');
 }
 
@@ -266,6 +546,11 @@ function createAircraftPopup(aircraft) {
                 <div style="color: #ffffff; font-weight: 500;">${Math.round(aircraft.heading)}°</div>
                 <div style="color: #b0b0b0;">Position:</div>
                 <div style="color: #ffffff; font-weight: 500;">${aircraft.latitude.toFixed(4)}, ${aircraft.longitude.toFixed(4)}</div>
+            </div>
+            <div style="margin-top: 12px;">
+                <button onclick="showAircraftDetails(${JSON.stringify(aircraft).replace(/"/g, '&quot;')})" style="background: #64b5f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    View Details
+                </button>
             </div>
         </div>
     `;
@@ -349,6 +634,12 @@ function initializeParticles() {
     // Add your existing particle system code here if you have one
 }
 
+// Initialize sidebar functionality
+function initializeSidebar() {
+    // Add any sidebar-specific initialization here
+    // This function exists to maintain compatibility with the original structure
+}
+
 // Message display function
 function showMessage(text, type) {
     // Remove existing messages
@@ -384,10 +675,14 @@ function showMessage(text, type) {
     }, 4000);
 }
 
-// Handle ESC key for exiting fullscreen
+// Handle ESC key for exiting fullscreen and closing panels
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isFullscreen) {
-        toggleFullscreen();
+    if (e.key === 'Escape') {
+        if (isFullscreen) {
+            toggleFullscreen();
+        } else {
+            closeAircraftPanel();
+        }
     }
 });
 
@@ -414,10 +709,15 @@ window.checkAircraftStatus = () => {
     console.log('- WebSocket state:', websocket ? websocket.readyState : 'Not initialized');
     console.log('- Active aircraft:', aircraftMarkers.size);
     console.log('- Reconnect attempts:', reconnectAttempts);
+    console.log('- Selected aircraft:', selectedAircraft);
     
     return {
         websocketState: websocket ? websocket.readyState : 'Not initialized',
         aircraftCount: aircraftMarkers.size,
-        reconnectAttempts: reconnectAttempts
+        reconnectAttempts: reconnectAttempts,
+        selectedAircraft: selectedAircraft
     };
 };
+
+// Make showAircraftDetails globally available for popup buttons
+window.showAircraftDetails = showAircraftDetails;

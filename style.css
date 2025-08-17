@@ -17,7 +17,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
+/* Enhanced Sidebar Styles with mobile support */
 .sidebar {
     position: fixed;
     left: 0;
@@ -33,6 +33,48 @@ body {
 
 .sidebar:hover {
     width: 280px;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile sidebar improvements */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 0 !important;
+        transform: translateX(-100%);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.mobile-open {
+        width: 280px !important;
+        transform: translateX(0);
+    }
+
+    .sidebar.mobile-open:hover {
+        width: 280px !important;
+    }
+
+    .sidebar.mobile-open .logo-text,
+    .sidebar.mobile-open .menu-text {
+        opacity: 1;
+    }
 }
 
 .sidebar-header {
@@ -73,7 +115,8 @@ body {
     transition: opacity 0.3s ease 0.1s;
 }
 
-.sidebar:hover .logo-text {
+.sidebar:hover .logo-text,
+.sidebar.mobile-open .logo-text {
     opacity: 1;
 }
 
@@ -113,7 +156,8 @@ body {
     transition: opacity 0.3s ease 0.1s;
 }
 
-.sidebar:hover .menu-text {
+.sidebar:hover .menu-text,
+.sidebar.mobile-open .menu-text {
     opacity: 1;
 }
 
@@ -131,6 +175,12 @@ body {
     transition: margin-left 0.3s ease;
 }
 
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+}
+
 .header {
     background: #1a1a2e;
     padding: 20px 40px;
@@ -144,6 +194,40 @@ body {
     font-size: 32px;
     font-weight: 300;
     color: #ffffff;
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #64b5f6;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(100, 181, 246, 0.1);
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .header {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
 }
 
 .content {
@@ -381,20 +465,6 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .sidebar {
-        width: 0;
-        transform: translateX(-100%);
-    }
-
-    .sidebar:hover {
-        width: 280px;
-        transform: translateX(0);
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
-
     .content {
         padding: 20px;
     }
