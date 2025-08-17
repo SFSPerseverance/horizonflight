@@ -98,7 +98,7 @@ function setLoginCookie(username) {
       }catch(e){
         // fallback config (local dev)
         return {
-          apiBase: '',
+          apiBase: 'https://horizon-backend-4f8h.onrender.com',
           endpoints: { createVerification: '/api/create-verification', verifyStatus:'/api/verify-status', users:'/api/users' }
         };
       }
@@ -230,8 +230,8 @@ function setLoginCookie(username) {
         const cfg = await loadConfig();
         const apiBase = cfg.apiBase || '';
         const signupUrls = [
-          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users : 'https://horizon-backend-4f8h.onrender.com/api/users'),
-          apiBase + 'https://horizon-backend-4f8h.onrender.com/api/register'
+          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users : '/api/users'),
+          apiBase + '/api/register'
         ];
 
         let created = false, createdResp = null;
