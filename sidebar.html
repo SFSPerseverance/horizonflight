@@ -1,19 +1,16 @@
 <!-- ==========================
   File: sidebar.html (fragment)
   Description: Sidebar markup. This file is intended to be fetched and injected into pages.
-  Use with sidebar-loader.js and sidebar.css (below).
+  Use with sidebar-loader.js. This version uses your existing site CSS (style.css) and your existing auth modal markup from index.html.
   ========================== -->
 
-<nav id="sidebar" class="site-sidebar" aria-label="Main sidebar">
+<nav id="sidebar" class="sidebar" aria-label="Main sidebar">
   <div class="sidebar-top">
-    <button id="sidebar-toggle" class="sidebar-hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
+    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span class="fa fa-bars" aria-hidden="true"></span>
     </button>
 
-    <a href="/" class="sidebar-brand">
-      <!-- simple inline SVG logo to avoid external deps -->
+    <a href="/index.html" class="brand">
       <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M2 12l10-7 10 7-10 7z" fill="currentColor" />
       </svg>
@@ -21,52 +18,90 @@
     </a>
   </div>
 
-  <div class="sidebar-scroll">
-    <ul class="sidebar-menu">
-      <li><a href="/index.html" class="menu-item"><span class="menu-icon">🏠</span><span class="menu-text">Home</span></a></li>
-      <li><a href="/live-map.html" class="menu-item"><span class="menu-icon">🗺️</span><span class="menu-text">Live Map</span></a></li>
-      <li><a href="/flights.html" class="menu-item"><span class="menu-icon">✈️</span><span class="menu-text">Flights</span></a></li>
-      <li><a href="/airports.html" class="menu-item"><span class="menu-icon">🏤</span><span class="menu-text">Airports</span></a></li>
-      <li><a href="/settings.html" class="menu-item"><span class="menu-icon">⚙️</span><span class="menu-text">Settings</span></a></li>
+  <div class="sidebar-body">
+    <ul class="menu">
+      <li><a href="/index.html" class="menu-item"><i class="fa fa-home"></i><span>Home</span></a></li>
+      <li><a href="/live-map.html" class="menu-item"><i class="fa fa-map"></i><span>Live Map</span></a></li>
+      <li><a href="/flights.html" class="menu-item"><i class="fa fa-plane"></i><span>Flights</span></a></li>
+      <li><a href="/airports.html" class="menu-item"><i class="fa fa-building"></i><span>Airports</span></a></li>
+      <li><a href="/settings.html" class="menu-item"><i class="fa fa-cog"></i><span>Settings</span></a></li>
     </ul>
 
     <div class="sidebar-footer">
       <div id="auth-area" class="auth-area">
-        <!-- Filled by sidebar-loader.js: shows login buttons or user info -->
-        <button id="btn-open-login" class="btn btn-primary">Log in</button>
+        <!-- This section will be populated by sidebar-loader.js using the existing auth modal / logic -->
+        <button id="btn-open-login" class="btn auth-btn">Log in</button>
         <a href="/signup.html" class="btn btn-ghost">Sign up</a>
       </div>
-
       <div class="sidebar-version">v1.0</div>
     </div>
   </div>
 
-  <!-- Overlay used on mobile to darken the page -->
-  <div id="sidebar-overlay" class="sidebar-overlay" tabindex="-1" aria-hidden="true"></div>
+  <!-- Overlay used on mobile: note the id/class match your existing script.css expectations -->
+  <div id="sidebarOverlay" class="sidebar-overlay" tabindex="-1" aria-hidden="true"></div>
 
-  <!-- Login modal (hidden by default) -->
-  <div id="sidebar-login-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-panel">
-      <button class="modal-close" id="modal-close" aria-label="Close login">✕</button>
-      <h3>Sign in</h3>
-      <form id="login-form" class="login-form">
-        <label>
-          <span class="label-text">Email</span>
-          <input type="email" name="email" required placeholder="you@example.com" />
-        </label>
-        <label>
-          <span class="label-text">Password</span>
-          <input type="password" name="password" required placeholder="••••••" />
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" name="remember" /> <span>Remember me</span>
-        </label>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Sign in</button>
-          <button type="button" id="modal-cancel" class="btn btn-ghost">Cancel</button>
-        </div>
-        <div id="login-error" class="form-error" aria-live="polite"></div>
-      </form>
+  <!-- NOTE: we intentionally do NOT include CSS here. Your global style.css already defines .sidebar, .sidebar-overlay, .modal, etc. -->
+
+  <!-- The canonical auth modal from your index.html is included here so other pages that load this fragment have the same login/signup UI and are wired to your existing script.js -->
+  
+  <!-- START AUTH MODAL (copied from your index.html) -->
+  <div id="authModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="close" aria-label="Close">&times;</button>
+
+      <!-- Login form block (shown by JS) -->
+      <div id="loginForm" class="auth-form" style="display:none;">
+        <h2>Login</h2>
+        <form id="loginFormElement">
+          <div class="input-group">
+            <label for="loginUsername">Roblox User id</label>
+            <input id="loginUsername" name="loginUsername" type="text" placeholder="12345678" />
+          </div>
+          <div class="input-group">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="loginPassword" type="password" placeholder="••••••••" />
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button type="submit" class="auth-btn" style="flex:1;">Login</button>
+            <button id="showSignup" class="auth-btn" style="flex:1; background:transparent;">Sign up</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signup form block (shown by JS) -->
+      <div id="signupForm" class="auth-form" style="display:none;">
+        <h2>Sign up</h2>
+        <form id="signupFormElement">
+          <div class="input-group">
+            <label for="signupUsername">Roblox User id</label>
+            <input id="signupUsername" name="signupUsername" type="text" placeholder="12345678" />
+          </div>
+          <div class="input-group">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" name="signupPassword" type="password" placeholder="Strong password" />
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" />
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button type="submit" class="auth-btn" style="flex:1;">Create account</button>
+            <button id="showLogin" class="auth-btn" style="flex:1; background:transparent;">Back to login</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Verification form is dynamically added by script via showVerificationForm() -->
+
     </div>
   </div>
+  <!-- END AUTH MODAL -->
+
 </nav>
+
+
+<!-- ==========================
+  File: sidebar-loader.js
+  Description: client JS loader that fetches sidebar.html fragment, injects it, wires up mobile toggles and ties into your existing script.js login/signup functions.
+  Usage: include <div id="sidebar-root" data-src="/sidebar.html"></div> and <script src="/sidebar-loader.js" defer></script>
+  ========================== -->
