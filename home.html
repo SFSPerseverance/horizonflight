@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon Flight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="shortcut icon" href="assets/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="manifest" href="assets/site.webmanifest" />
+</head>
+
+<div id="devTestUsers" style="position:fixed; right:12px; bottom:12px; z-index:20000;">
+  <button id="openTestUsersBtn" style="padding:8px 10px; border-radius:10px; background:#222; color:#fff; border:0;">Test Users</button>
+  <div id="testUsersPanel" style="display:none; min-width:280px; background:#0b0b0b; color:#ddd; padding:12px; border-radius:10px; margin-top:8px; box-shadow:0 6px 18px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>Signed up users</strong>
+      <button id="closeTestUsersBtn" style="background:transparent; border:0; color:#999;">✕</button>
+    </div>
+    <div id="testUsersList" style="margin-top:10px; max-height:260px; overflow:auto;"></div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button id="refreshTestUsersBtn" style="flex:1;">Refresh</button>
+      <button id="clearTestUsersBtn" style="flex:1; background:#a33; color:#fff;">Clear All</button>
+    </div>
+    <small style="display:block; margin-top:8px; color:#888;">Only for local testing. In prod, admin pages + server DB required.</small>
+  </div>
+</div>
+
+<body>
+    <div id="sidebar-root" data-src="sidebar.html"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+
+        <!-- Login/Signup Modal -->
+        <div id="authModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="close" aria-label="Close">&times;</button>
+
+      <!-- Login form block (shown by JS) -->
+      <div id="loginForm" class="auth-form" style="display:none;">
+        <h2>Login</h2>
+        <form id="loginFormElement">
+          <div class="input-group">
+            <label for="loginUsername">Roblox User id</label>
+            <input id="loginUsername" name="loginUsername" type="text" placeholder="12345678" />
+          </div>
+          <div class="input-group">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="loginPassword" type="password" placeholder="••••••••" />
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button type="submit" class="auth-btn" style="flex:1;">Login</button>
+            <button id="showSignup" class="auth-btn" style="flex:1; background:transparent;">Sign up</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signup form block (shown by JS) -->
+      <div id="signupForm" class="auth-form" style="display:none;">
+        <h2>Sign up</h2>
+        <form id="signupFormElement">
+          <div class="input-group">
+            <label for="signupUsername">Roblox User id</label>
+            <input id="signupUsername" name="signupUsername" type="text" placeholder="12345678" />
+          </div>
+          <div class="input-group">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" name="signupPassword" type="password" placeholder="Strong password" />
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" />
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button type="submit" class="auth-btn" style="flex:1;">Create account</button>
+            <button id="showLogin" class="auth-btn" style="flex:1; background:transparent;">Back to login</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Verification form is dynamically added by script via showVerificationForm() -->
+
+    </div>
+  </div>
+
+        <!-- User Info Display -->
+        <div id="userInfo" class="user-info" style="display: none;">
+            <div class="user-avatar">
+                <img src="https://www.roblox.com/headshot-thumbnail/image?userId=USER_ID&w=150&h=150&format=png"
+                    alt="User Avatar">
+            </div>
+            <span class="username" id="currentUser"></span>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Welcome to Horizon Flight Simulator</h1>
+            </header>
+
+            <div class="content">
+                <section class="hero-section">
+                    <h2 class="hero-title">Horizon Flight</h2>
+                    <p class="hero-subtitle">
+                        Roblox's most realistic flight simulator. Stunning graphics, real flight model and fully
+                        functional systems - everything you would want.
+                    </p>
+                    <a href="#" class="cta-button">
+                        <i class="fas fa-play" style="margin-right: 10px;"></i>
+                        Play on Roblox now!
+                    </a>
+                </section>
+
+                <section class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <h3 class="feature-title">Realistic Aircraft</h3>
+                        <p class="feature-description">
+                            Currently featuring the 737, Boeing's workhorse aircraft. With all systems functional,
+                            flying it feels very immersive.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe-europe"></i>
+                        </div>
+                        <h3 class="feature-title">Global Scenery</h3>
+                        <p class="feature-description">
+                            Real terrain, roads, buildings. Explore your home town, or fly between any two real airports
+                            in real scale.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h3 class="feature-title">Amazing Graphics</h3>
+                        <p class="feature-description">
+                            Pushing Roblox's lighting to the max and creating high quality textures means not only the
+                            feel is real, but also the look.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="feature-title">Integration</h3>
+                        <p class="feature-description">
+                            Use Simbrief to plan your flights and load them into the simulator. Makes flying much
+                            easier.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Navigation</h3>
+                        <p class="feature-description">
+                            With real navigation data, IFR flights are possible from any airport to another.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Changelogs Section -->
+                <section class="changelogs-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Latest Updates
+                    </h2>
+                    <div class="changelog-container" id="changelogContainer">
+                        <div class="changelog-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading changelogs...</span>
+                        </div>
+                    </div>
+                    <div class="changelog-error" id="changelogError" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Unable to load changelogs. Please check back later.</span>
+                    </div>
+                </section>
+
+                
+            </div>
+        </main>
+    </div>
+
+    <script src="sidebar-loader.js" defer></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
