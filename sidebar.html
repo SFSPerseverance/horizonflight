@@ -1,51 +1,48 @@
-<!-- ==========================
-  File: sidebar.html (fragment)
-  Description: Sidebar markup. This file is intended to be fetched and injected into pages.
-  Use with sidebar-loader.js. This version uses your existing site CSS (style.css) and your existing auth modal markup from index.html.
-  ========================== -->
+<nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-plane"></i>
+                    <span class="logo-text">Horizon Flight</span>
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="#" class="menu-item" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span class="menu-text">Login</span>
+                </a>
+                <a href="index.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+                <a href="live-map.html" class="menu-item">
+                    <i class="fas fa-map"></i>
+                    <span class="menu-text">Live Map</span>
+                </a>
+                <a href="flights.html" class="menu-item">
+                    <i class="fas fa-plane"></i>
+                    <span class="menu-text">Flights</span>
+                </a>
+                <a href="airports.html" class="menu-item">
+                    <i class="fas fa-building"></i>
+                    <span class="menu-text">Airports</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-route"></i>
+                    <span class="menu-text">Plan a Flight</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-text">Settings</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-text">Help</span>
+                </a>
+            </div>
+        </nav>
 
-<nav id="sidebar" class="sidebar" aria-label="Main sidebar">
-  <div class="sidebar-top">
-    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle menu" aria-expanded="false">
-      <span class="fa fa-bars" aria-hidden="true"></span>
-    </button>
-
-    <a href="/index.html" class="brand">
-      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M2 12l10-7 10 7-10 7z" fill="currentColor" />
-      </svg>
-      <span class="brand-text">Horizon Flight</span>
-    </a>
-  </div>
-
-  <div class="sidebar-body">
-    <ul class="menu">
-      <li><a href="/index.html" class="menu-item"><i class="fa fa-home"></i><span>Home</span></a></li>
-      <li><a href="/live-map.html" class="menu-item"><i class="fa fa-map"></i><span>Live Map</span></a></li>
-      <li><a href="/flights.html" class="menu-item"><i class="fa fa-plane"></i><span>Flights</span></a></li>
-      <li><a href="/airports.html" class="menu-item"><i class="fa fa-building"></i><span>Airports</span></a></li>
-      <li><a href="/settings.html" class="menu-item"><i class="fa fa-cog"></i><span>Settings</span></a></li>
-    </ul>
-
-    <div class="sidebar-footer">
-      <div id="auth-area" class="auth-area">
-        <!-- This section will be populated by sidebar-loader.js using the existing auth modal / logic -->
-        <button id="btn-open-login" class="btn auth-btn">Log in</button>
-        <a href="/signup.html" class="btn btn-ghost">Sign up</a>
-      </div>
-      <div class="sidebar-version">v1.0</div>
-    </div>
-  </div>
-
-  <!-- Overlay used on mobile: note the id/class match your existing script.css expectations -->
-  <div id="sidebarOverlay" class="sidebar-overlay" tabindex="-1" aria-hidden="true"></div>
-
-  <!-- NOTE: we intentionally do NOT include CSS here. Your global style.css already defines .sidebar, .sidebar-overlay, .modal, etc. -->
-
-  <!-- The canonical auth modal from your index.html is included here so other pages that load this fragment have the same login/signup UI and are wired to your existing script.js -->
-  
-  <!-- START AUTH MODAL (copied from your index.html) -->
-  <div id="authModal" class="modal" style="display:none;">
+<!-- ORIGINAL AUTH MODAL (copied verbatim from index.html) -->
+<div id="authModal" class="modal" style="display:none;">
     <div class="modal-content">
       <button class="close" aria-label="Close">&times;</button>
 
@@ -95,13 +92,3 @@
 
     </div>
   </div>
-  <!-- END AUTH MODAL -->
-
-</nav>
-
-
-<!-- ==========================
-  File: sidebar-loader.js
-  Description: client JS loader that fetches sidebar.html fragment, injects it, wires up mobile toggles and ties into your existing script.js login/signup functions.
-  Usage: include <div id="sidebar-root" data-src="/sidebar.html"></div> and <script src="/sidebar-loader.js" defer></script>
-  ========================== -->
