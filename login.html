@@ -155,7 +155,7 @@ function setLoginCookie(username) {
         const apiBase = cfg.apiBase || '';
         const tryEndpoints = [
           apiBase + '/api/login',
-          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users + 'https://horizon-backend-4f8h.onrender.com/login' : 'https://horizon-backend-4f8h.onrender.com/api/users/login'),
+          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users + 'login' : '/api/users/login'),
           apiBase + '/api/users/login'
         ];
 
