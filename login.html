@@ -176,7 +176,7 @@
             localStorage.setItem('authToken', token);
             localStorage.setItem('authUser', JSON.stringify(user));
             // Redirect to home or to return URL if present
-            const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+            const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/index.html';
             window.location.href = returnTo;
             return;
           } else {
