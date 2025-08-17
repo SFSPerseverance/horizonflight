@@ -1,0 +1,8 @@
+{
+  "apiBase": "https://horizon-backend-4f8h.onrender.com",
+  "endpoints": {
+    "createVerification": "/api/create-verification",
+    "verifyStatus": "/api/verify-status",
+    "users": "/api/users"
+  }
+}
