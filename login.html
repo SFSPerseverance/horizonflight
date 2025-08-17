@@ -92,7 +92,7 @@ function setLoginCookie(username) {
 
     async function loadConfig(){
       try{
-        const r = await fetch('/auth-config.json', {cache:'no-store'});
+        const r = await fetch('/horizonflight/auth-config.json', {cache:'no-store'});
         if(!r.ok) throw new Error('Failed to load auth-config.json');
         return await r.json();
       }catch(e){
@@ -155,7 +155,7 @@ function setLoginCookie(username) {
         const apiBase = cfg.apiBase || '';
         const tryEndpoints = [
           apiBase + '/api/login',
-          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users + '/login' : '/api/users/login'),
+          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users + 'https://horizon-backend-4f8h.onrender.com/login' : 'https://horizon-backend-4f8h.onrender.com/api/users/login'),
           apiBase + '/api/users/login'
         ];
 
@@ -230,8 +230,8 @@ function setLoginCookie(username) {
         const cfg = await loadConfig();
         const apiBase = cfg.apiBase || '';
         const signupUrls = [
-          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users : '/api/users'),
-          apiBase + '/api/register'
+          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users : 'https://horizon-backend-4f8h.onrender.com/api/users'),
+          apiBase + 'https://horizon-backend-4f8h.onrender.com/api/register'
         ];
 
         let created = false, createdResp = null;
