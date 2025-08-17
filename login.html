@@ -83,6 +83,13 @@
   <script>
   (function(){
     // Utility: safe JSON fetch for config
+function setLoginCookie(username) {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
+      // encodeURIComponent to be safe with characters
+      document.cookie = 'horizonUser=' + encodeURIComponent(username) + '; expires=' + expires.toUTCString() + '; path=/';
+    }
+
     async function loadConfig(){
       try{
         const r = await fetch('/auth-config.json', {cache:'no-store'});
@@ -122,7 +129,7 @@
       btnShowLogin.addEventListener('click', (e)=>{ if(usesGlobal.showLoginForm){ window.showLoginForm(); } else showLogin(); });
 
       // Close button (just goes back to home)
-      document.getElementById('closeBtn').addEventListener('click', ()=>{ window.location.href = '/'; });
+      document.getElementById('closeBtn').addEventListener('click', ()=>{ window.location.href = '/horizonflight/home'; });
 
       // Login submit
       document.getElementById('loginFormElement').addEventListener('submit', async (ev)=>{
@@ -241,21 +248,16 @@
           }catch(e){ continue; }
         }
 
-        if(created && createdResp){
-          // If backend returns a token, use it. Otherwise fallback to dev flow.
+         if(created && createdResp){
           const token = createdResp.token || createdResp.accessToken;
           const user = createdResp.user || { name: username, email: '' };
-          if(token){
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('authUser', JSON.stringify(user));
-            window.location.href = '/';
-            return;
-          } else {
-            // Some backends require a verification flow: show message and bring forward verification UI if available
-            alert('Account created. Please verify your account if required. Redirecting to home.');
-            window.location.href = '/';
-            return;
-          }
+
+          // set the same cookie your site uses
+          setLoginCookie(username);
+          if(token) localStorage.setItem('authToken', token);
+          localStorage.setItem('authUser', JSON.stringify(user));
+          window.location.href = '/';
+          return;
         }
 
         // Fallback dev create
