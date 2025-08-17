@@ -1,0 +1,72 @@
+<!-- ==========================
+  File: sidebar.html (fragment)
+  Description: Sidebar markup. This file is intended to be fetched and injected into pages.
+  Use with sidebar-loader.js and sidebar.css (below).
+  ========================== -->
+
+<nav id="sidebar" class="site-sidebar" aria-label="Main sidebar">
+  <div class="sidebar-top">
+    <button id="sidebar-toggle" class="sidebar-hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+
+    <a href="/" class="sidebar-brand">
+      <!-- simple inline SVG logo to avoid external deps -->
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M2 12l10-7 10 7-10 7z" fill="currentColor" />
+      </svg>
+      <span class="brand-text">Horizon Flight</span>
+    </a>
+  </div>
+
+  <div class="sidebar-scroll">
+    <ul class="sidebar-menu">
+      <li><a href="/index.html" class="menu-item"><span class="menu-icon">🏠</span><span class="menu-text">Home</span></a></li>
+      <li><a href="/live-map.html" class="menu-item"><span class="menu-icon">🗺️</span><span class="menu-text">Live Map</span></a></li>
+      <li><a href="/flights.html" class="menu-item"><span class="menu-icon">✈️</span><span class="menu-text">Flights</span></a></li>
+      <li><a href="/airports.html" class="menu-item"><span class="menu-icon">🏤</span><span class="menu-text">Airports</span></a></li>
+      <li><a href="/settings.html" class="menu-item"><span class="menu-icon">⚙️</span><span class="menu-text">Settings</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div id="auth-area" class="auth-area">
+        <!-- Filled by sidebar-loader.js: shows login buttons or user info -->
+        <button id="btn-open-login" class="btn btn-primary">Log in</button>
+        <a href="/signup.html" class="btn btn-ghost">Sign up</a>
+      </div>
+
+      <div class="sidebar-version">v1.0</div>
+    </div>
+  </div>
+
+  <!-- Overlay used on mobile to darken the page -->
+  <div id="sidebar-overlay" class="sidebar-overlay" tabindex="-1" aria-hidden="true"></div>
+
+  <!-- Login modal (hidden by default) -->
+  <div id="sidebar-login-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="modal-close" id="modal-close" aria-label="Close login">✕</button>
+      <h3>Sign in</h3>
+      <form id="login-form" class="login-form">
+        <label>
+          <span class="label-text">Email</span>
+          <input type="email" name="email" required placeholder="you@example.com" />
+        </label>
+        <label>
+          <span class="label-text">Password</span>
+          <input type="password" name="password" required placeholder="••••••" />
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" name="remember" /> <span>Remember me</span>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Sign in</button>
+          <button type="button" id="modal-cancel" class="btn btn-ghost">Cancel</button>
+        </div>
+        <div id="login-error" class="form-error" aria-live="polite"></div>
+      </form>
+    </div>
+  </div>
+</nav>
