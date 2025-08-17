@@ -12,6 +12,117 @@ sidebar.addEventListener('mouseleave', () => {
     }, 1000);
 });
 
+// Initialize mobile functionality when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeMobileControls();
+});
+
+function initializeMobileControls() {
+    // Create mobile menu button if it doesn't exist
+    let mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    if (!mobileMenuBtn) {
+        // Create and add mobile menu button to header
+        const header = document.querySelector('.header');
+        if (header) {
+            mobileMenuBtn = document.createElement('button');
+            mobileMenuBtn.id = 'mobileMenuBtn';
+            mobileMenuBtn.className = 'mobile-menu-btn';
+            mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            header.prepend(mobileMenuBtn);
+        }
+    }
+
+    // Create sidebar overlay if it doesn't exist
+    let sidebarOverlay = document.getElementById('sidebarOverlay');
+    if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement('div');
+        sidebarOverlay.id = 'sidebarOverlay';
+        sidebarOverlay.className = 'sidebar-overlay';
+        document.body.appendChild(sidebarOverlay);
+    }
+
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuBtn && sidebar && sidebarOverlay) {
+        // Mobile menu button click
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.add('mobile-open');
+            sidebarOverlay.classList.add('active');
+        });
+
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Enhanced swipe to open sidebar - works from anywhere on screen
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let isSwipeActive = false;
+        let hasMoved = false;
+
+        document.addEventListener('touchstart', (e) => {
+            // Don't interfere with panels or modals
+            if (e.target.closest('.aircraft-panel') || e.target.closest('.modal')) return;
+            
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isSwipeActive = true;
+            hasMoved = false;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isSwipeActive) return;
+            if (e.target.closest('.aircraft-panel') || e.target.closest('.modal')) return;
+            
+            currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = currentX - startX;
+            const diffY = Math.abs(currentY - startY);
+            
+            hasMoved = true;
+            
+            // Check if this is primarily a horizontal swipe (not vertical scroll)
+            if (diffY < 50 && diffX > 80 && startX < window.innerWidth * 0.5) {
+                // Swipe right from left half of screen
+                sidebar.classList.add('mobile-open');
+                sidebarOverlay.classList.add('active');
+                isSwipeActive = false;
+            } else if (diffX < -80 && sidebar.classList.contains('mobile-open')) {
+                // Swipe left to close sidebar
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                isSwipeActive = false;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            isSwipeActive = false;
+            hasMoved = false;
+        }, { passive: true });
+
+        // Close sidebar with menu items on mobile
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('mobile-open');
+                    sidebarOverlay.classList.remove('active');
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+    }
+}
+
 /* -------------------------
    Changelogs loader (unchanged)
    ------------------------- */
@@ -435,7 +546,7 @@ function showVerificationForm(username, code) {
 
         const statusEl = document.getElementById('verifyStatus');
         if (statusJson.ok && statusJson.verified) {
-            statusEl.textContent = 'Verified — signup complete!';
+            statusEl.textContent = 'Verified – signup complete!';
             statusEl.style.color = '#8ee28e';
 
             // Now log in the user (store only the ID locally)
@@ -444,7 +555,7 @@ function showVerificationForm(username, code) {
 
             // Close modal
             setTimeout(() => animateModalClose(document.getElementById('authModal')), 800);
-            showMessage('Verification successful — welcome!', 'success');
+            showMessage('Verification successful – welcome!', 'success');
         } else {
             statusEl.textContent = 'Not verified yet. Enter the code in the Roblox game.';
             statusEl.style.color = '#ffbaba';
@@ -479,7 +590,7 @@ async function handleLogin() {
 
     if (!userData.verified) {
         // If user hasn't verified, show the verification form again
-        showMessage('Account not verified yet — please verify using the Roblox game.', 'error');
+        showMessage('Account not verified yet – please verify using the Roblox game.', 'error');
         showVerificationForm(username, userData.verificationCode || '------');
         return;
     }
@@ -538,7 +649,7 @@ async function handleSignup() {
 
     // Show verification UI (only show code if DEBUG_RETURN_CODE=true on backend)
     const codeForTesting = out.code || "------";
-    showMessage('Signup created — awaiting verification from the Roblox game', 'success');
+    showMessage('Signup created – awaiting verification from the Roblox game', 'success');
     showVerificationForm(username, codeForTesting);
 }
 
@@ -1022,4 +1133,4 @@ function clearAllTestUsers() {
         render();
         showMessage('All test users cleared', 'success');
     });
-})();
+})()
