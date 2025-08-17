@@ -189,6 +189,7 @@ function setLoginCookie(username) {
             localStorage.setItem('authToken', token);
             localStorage.setItem('authUser', JSON.stringify(user));
             // Redirect to home or to return URL if present
+            setTimeout(function(){}, 1000)
             const returnTo = 'horizonflight/home.html';
             window.location.href = returnTo;
             return;
