@@ -812,6 +812,37 @@ function initializeSimulatorFeatures() {
     });
 }
 
+document.addEventListener('sidebar:loaded', () => {
+  const loginBtn = document.getElementById('loginBtn');
+  if (!loginBtn) return;
+
+  // Remove existing listeners if any (defensive), then attach the canonical handler
+  // (We don't try to remove anonymous listeners here — this is a simple attach.)
+  loginBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // Find the canonical auth modal (the one from home.html)
+    const modal = document.querySelector('#authModal');
+    if (!modal) {
+      console.warn('authModal not found in document.');
+      return;
+    }
+
+    // Open the modal and show the login form
+    animateModalOpen(modal);
+    // showLoginForm is defined in your script.js and will show #loginForm
+    if (typeof showLoginForm === 'function') showLoginForm();
+
+    // If mobile sidebar is open, close it for a cleaner UX
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    if (sidebarEl && sidebarEl.classList.contains('mobile-open')) {
+      sidebarEl.classList.remove('mobile-open');
+      if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    }
+  });
+});
+
 // Modal for flight start (placeholder function)
 function showFlightStartModal() {
     // This would normally open a flight selection modal
