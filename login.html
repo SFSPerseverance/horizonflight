@@ -5,35 +5,31 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Login — Horizon Flight</title>
 
-  <!-- Your global site CSS (ensure this path matches your project) -->
+  <!-- Your global site CSS -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Extracted auth-form CSS (optional if your global CSS covers it) -->
   <link rel="stylesheet" href="auth-form.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
-
-  <!-- Font Awesome if your site uses it for the sidebar icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-...omitted..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-    <link rel="shortcut icon" href="assets/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
-    <link rel="manifest" href="assets/site.webmanifest" />
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="shortcut icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="assets/site.webmanifest" />
 </head>
 <body>
   <main class="auth-page">
     <section class="auth-panel">
-      <!-- --- EXACT original modal form markup moved to a page --- -->
       <div id="authModalInline" class="modal-inline">
         <div class="modal-content">
           <button id="closeBtn" class="close" aria-label="Close">&times;</button>
 
-          <!-- Login form block (shown on page) -->
+          <!-- Login form block -->
           <div id="loginForm" class="auth-form">
             <h2>Login</h2>
             <form id="loginFormElement">
               <div class="input-group">
-                <label for="loginUsername">Roblox User id</label>
+                <label for="loginUsername">Roblox User ID</label>
                 <input id="loginUsername" name="loginUsername" type="text" placeholder="12345678" required />
               </div>
               <div class="input-group">
@@ -48,12 +44,12 @@
             <div id="loginError" class="form-error" aria-live="polite"></div>
           </div>
 
-          <!-- Signup form block (shown on page) -->
+          <!-- Signup form block -->
           <div id="signupForm" class="auth-form" style="display:none;">
             <h2>Sign up</h2>
             <form id="signupFormElement">
               <div class="input-group">
-                <label for="signupUsername">Roblox User id</label>
+                <label for="signupUsername">Roblox User ID</label>
                 <input id="signupUsername" name="signupUsername" type="text" placeholder="12345678" required />
               </div>
               <div class="input-group">
@@ -71,207 +67,327 @@
             </form>
             <div id="signupError" class="form-error" aria-live="polite"></div>
           </div>
-
-          <!-- Verification form area (will be injected/displayed by existing script if present) -->
-          <div id="verificationArea"></div>
         </div>
       </div>
-      <!-- end auth markup -->
     </section>
   </main>
 
   <script>
-  (function(){
-    // Utility: safe JSON fetch for config
-function setLoginCookie(username) {
+    // Cookie helper function
+    function setLoginCookie(username) {
       const expires = new Date();
       expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
-      // encodeURIComponent to be safe with characters
       document.cookie = 'horizonUser=' + encodeURIComponent(username) + '; expires=' + expires.toUTCString() + '; path=/';
     }
 
-    async function loadConfig(){
-      try{
-        const r = await fetch('/horizonflight/auth-config.json', {cache:'no-store'});
-        if(!r.ok) throw new Error('Failed to load auth-config.json');
-        return await r.json();
-      }catch(e){
-        // fallback config (local dev)
-        return {
-          apiBase: 'https://horizon-backend-4f8h.onrender.com',
-          endpoints: { createVerification: '/api/create-verification', verifyStatus:'/api/verify-status', users:'/api/users' }
-        };
+    function getLoginCookie() {
+      const name = "horizonUser=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+    function getUserData(username) {
+      const users = JSON.parse(localStorage.getItem('horizonUsers') || '{}');
+      return users[username] || null;
+    }
+
+    function storeUserData(username, password, additionalData = {}) {
+      const users = JSON.parse(localStorage.getItem('horizonUsers') || '{}');
+      users[username] = {
+        username: username,
+        password: password,
+        joinDate: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        verified: false,
+        verificationCode: null,
+        ...additionalData
+      };
+      localStorage.setItem('horizonUsers', JSON.stringify(users));
+    }
+
+    async function getRobloxUsername(userId) {
+      try {
+        const response = await fetch(`https://users.roproxy.com/v1/users/${userId}`);
+        const data = await response.json();
+        return data && data.name ? data.name : null;
+      } catch (err) {
+        console.error("Error fetching Roblox username:", err);
+        return null;
       }
     }
 
-    // Helper: show/hide UI blocks
-    function showLogin(){ document.getElementById('loginForm').style.display = ''; document.getElementById('signupForm').style.display = 'none'; document.getElementById('loginError').textContent=''; }
-    function showSignup(){ document.getElementById('loginForm').style.display = 'none'; document.getElementById('signupForm').style.display = ''; document.getElementById('signupError').textContent=''; }
+    function showMessage(text, type) {
+      // Remove any existing messages
+      document.querySelectorAll('.message').forEach(msg => msg.remove());
 
-    // Try to use your existing global helper if available, otherwise fallback to our internal functions
-    const usesGlobal = {
-      showLoginForm: typeof window.showLoginForm === 'function',
-      showSignupForm: typeof window.showSignupForm === 'function',
-      initializeAuth: typeof window.initializeAuth === 'function'
-    };
+      const message = document.createElement('div');
+      message.className = `message ${type}`;
+      message.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10001;
+        animation: slideIn 0.3s ease;
+        ${type === 'success' ? 'background: #4caf50;' : 'background: #f44336;'}
+      `;
+      message.textContent = text;
 
-    document.addEventListener('DOMContentLoaded', async ()=>{
+      document.body.appendChild(message);
+      setTimeout(() => message.remove(), 4000);
+    }
 
-      // If original initializeAuth exists, call it (keeps behavior consistent)
-      if(usesGlobal.initializeAuth){
-        try{ window.initializeAuth(); }catch(e){ console.warn('initializeAuth threw', e); }
+    function generateVerificationCode() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    // UI helpers
+    function showLogin() { 
+      document.getElementById('loginForm').style.display = ''; 
+      document.getElementById('signupForm').style.display = 'none'; 
+      document.getElementById('loginError').textContent = '';
+      // Clear verification form if it exists
+      const verifyForm = document.getElementById('verifyForm');
+      if (verifyForm) verifyForm.remove();
+    }
+
+    function showSignup() { 
+      document.getElementById('loginForm').style.display = 'none'; 
+      document.getElementById('signupForm').style.display = ''; 
+      document.getElementById('signupError').textContent = '';
+      // Clear verification form if it exists
+      const verifyForm = document.getElementById('verifyForm');
+      if (verifyForm) verifyForm.remove();
+    }
+
+    function showVerificationForm(username, code) {
+      // Remove existing verification form
+      const existing = document.getElementById('verifyForm');
+      if (existing) existing.remove();
+
+      const container = document.querySelector('#authModalInline .modal-content');
+      const verifyDiv = document.createElement('div');
+      verifyDiv.id = 'verifyForm';
+      verifyDiv.className = 'auth-form';
+      verifyDiv.innerHTML = `
+        <h2>Verify your account</h2>
+        <p style="color:#b0b0b0; font-size:14px; margin-bottom:10px;">
+          A one-time 6-digit verification code was generated for your signup.
+          <strong>Enter that code in the Horizon Flight Roblox game</strong> (in the in-game verification UI).
+          Once you've entered it there, click <em>Check verification</em> below.
+        </p>
+        <div class="input-group">
+          <label>Your Roblox User ID</label>
+          <input type="text" id="verifyUserId" value="${username}" disabled>
+        </div>
+        <div class="input-group">
+          <label>Verification Status</label>
+          <div id="verifyStatus" style="color:#b0b0b0; font-size:14px;">Waiting for verification from the Roblox game...</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button id="checkVerificationBtn" class="auth-btn" style="flex:1;">Check verification</button>
+          <button id="showCodeBtn" class="auth-btn" style="flex:1; background:transparent; border:1px solid rgba(100,181,246,0.3);">Show code</button>
+        </div>
+        <div id="revealedCode" style="margin-top:12px; color:#64b5f6; font-weight:700; display:none;">${code}</div>
+        <p style="margin-top:12px; font-size:13px; color:#888;">If you're testing locally, you can click "Show code" and paste it into the Roblox game's verification input. In production you'd typically hide the code and have the Roblox game send the code to your server to mark the account verified.</p>
+      `;
+
+      // Hide login/signup forms
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'none';
+      container.appendChild(verifyDiv);
+
+      // Add button events
+      document.getElementById('showCodeBtn').addEventListener('click', () => {
+        const rc = document.getElementById('revealedCode');
+        rc.style.display = rc.style.display === 'none' ? 'block' : 'none';
+      });
+
+      document.getElementById('checkVerificationBtn').addEventListener('click', async () => {
+        const userData = getUserData(username);
+        const statusEl = document.getElementById('verifyStatus');
+        
+        if (userData && userData.verified) {
+          statusEl.textContent = 'Verified — signup complete!';
+          statusEl.style.color = '#8ee28e';
+
+          // Log in the user
+          setLoginCookie(username);
+          
+          // Redirect to home page
+          setTimeout(() => {
+            window.location.href = '/horizonflight/home';
+          }, 800);
+          showMessage('Verification successful — welcome!', 'success');
+        } else {
+          statusEl.textContent = 'Not verified yet. Enter the code in the Roblox game.';
+          statusEl.style.color = '#ffbaba';
+        }
+      });
+    }
+
+    // Get return URL from query parameters
+    function getReturnTo() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('returnTo') || '/horizonflight/home';
+    }
+
+    // Login handler
+    async function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      if (!username || !password) {
+        errorEl.textContent = 'Please fill in all fields';
+        return;
       }
 
-      // If your site had functions to toggle, prefer them
-      const btnShowSignup = document.getElementById('showSignup');
-      const btnShowLogin = document.getElementById('showLogin');
-      btnShowSignup.addEventListener('click', (e)=>{ if(usesGlobal.showSignupForm){ window.showSignupForm(); } else showSignup(); });
-      btnShowLogin.addEventListener('click', (e)=>{ if(usesGlobal.showLoginForm){ window.showLoginForm(); } else showLogin(); });
+      const userData = getUserData(username);
+      
+      if (!userData) {
+        errorEl.textContent = 'Username not found. Please sign up first.';
+        return;
+      }
 
-      // Close button (just goes back to home)
-      document.getElementById('closeBtn').addEventListener('click', ()=>{ window.location.href = '/horizonflight/home'; });
+      if (userData.password !== password) {
+        errorEl.textContent = 'Incorrect password';
+        return;
+      }
 
-      // Login submit
-      document.getElementById('loginFormElement').addEventListener('submit', async (ev)=>{
-        ev.preventDefault();
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const err = document.getElementById('loginError');
-        err.textContent = '';
+      if (!userData.verified) {
+        errorEl.textContent = 'Account not verified yet — please verify using the Roblox game.';
+        showVerificationForm(username, userData.verificationCode || '------');
+        return;
+      }
 
-        if(!username || !password){ err.textContent = 'Please fill both fields.'; return; }
+      // Success - set cookie and redirect
+      setLoginCookie(username);
+      
+      // Update last login
+      userData.lastLogin = new Date().toISOString();
+      storeUserData(username, password, userData);
 
-        // If your site has a global handler, call it (keeps exact original flow)
-        if(typeof window.handleLogin === 'function'){
-          try{
-            await window.handleLogin({username, password});
-            // assume handleLogin sets localStorage/token and redirects
-            return;
-          }catch(e){ err.textContent = e.message || 'Login failed'; return; }
-        }
+      const robloxUsername = await getRobloxUsername(username);
+      showMessage(`Welcome back, ${robloxUsername || username}!`, 'success');
+      
+      setTimeout(() => {
+        window.location.href = getReturnTo();
+      }, 1000);
+    }
 
-        // Otherwise perform a best-effort API call using auth-config.json
-        const cfg = await loadConfig();
-        const apiBase = cfg.apiBase || '';
-        const tryEndpoints = [
-          apiBase + '/api/login',
-        ];
+    // Signup handler
+    async function handleSignup(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('signupUsername').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const errorEl = document.getElementById('signupError');
 
-        let respJson = null;
-        let success = false;
-        for(const url of tryEndpoints){
-          try{
-            const r = await fetch(url, {
-              method:'POST',
-              headers:{ 'Content-Type':'application/json' },
-              body: JSON.stringify({ username, password })
-            });
-            if(!r.ok){
-              // try next endpoint
-              continue;
-            }
-            respJson = await r.json().catch(()=>null);
-            success = true;
-            break;
-          }catch(e){
-            // network error -> try next
-            continue;
-          }
-        }
+      // Validation
+      if (!username || !password || !confirmPassword) {
+        errorEl.textContent = 'Please fill in all fields';
+        return;
+      }
 
-        if(success && respJson){
-          // Expecting { token, user } from backend (keeps parity with previous code)
-          const token = respJson.token || respJson.accessToken || respJson.authToken;
-          const user = respJson.user || { name: username, id: respJson.id || null, email: respJson.email || null };
-          if(token){
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('authUser', JSON.stringify(user));
-            // Redirect to home or to return URL if present
-            setTimeout(function(){}, 1000)
-            const returnTo = 'horizonflight/home.html';
-            window.location.href = returnTo;
-            return;
-          } else {
-            err.textContent = respJson.message || 'Login failed: invalid credentials';
-            return;
-          }
-        }
+      if (!/^\d+$/.test(username)) {
+        errorEl.textContent = 'User ID must be numbers only';
+        return;
+      }
 
-        // Final fallback: local dev login (accept any non-empty password) — remove in production
-        console.warn('Auth endpoints unreachable — using local fallback login (dev only).');
-        localStorage.setItem('authToken', 'dev-token-' + Date.now());
-        localStorage.setItem('authUser', JSON.stringify({ name: username, email: '' }));
-        window.location.href = '/horizonflight/home.html';
+      if (password !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match';
+        return;
+      }
+
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        errorEl.textContent = 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character';
+        return;
+      }
+
+      // Check if Roblox user exists
+      const robloxUsername = await getRobloxUsername(username);
+      if (!robloxUsername) {
+        errorEl.textContent = 'Invalid Roblox User ID';
+        return;
+      }
+
+      // Check if user already exists
+      const existingUser = getUserData(username);
+      if (existingUser) {
+        errorEl.textContent = 'User already exists';
+        return;
+      }
+
+      // Generate verification code and store user
+      const verificationCode = generateVerificationCode();
+      storeUserData(username, password, {
+        verified: false,
+        verificationCode: verificationCode
       });
 
-      // Signup submit
-      document.getElementById('signupFormElement').addEventListener('submit', async (ev)=>{
-        ev.preventDefault();
-        const username = document.getElementById('signupUsername').value.trim();
-        const password = document.getElementById('signupPassword').value;
-        const confirm = document.getElementById('confirmPassword').value;
-        const err = document.getElementById('signupError');
-        err.textContent = '';
+      showMessage('Signup created — awaiting verification from the Roblox game', 'success');
+      showVerificationForm(username, verificationCode);
+    }
 
-        if(!username || !password){ err.textContent = 'Please fill required fields.'; return; }
-        if(password !== confirm){ err.textContent = 'Passwords do not match.'; return; }
+    // DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if already logged in
+      const loggedInUser = getLoginCookie();
+      if (loggedInUser) {
+        window.location.href = getReturnTo();
+        return;
+      }
 
-        // If your site has a global handler, call it
-        if(typeof window.handleSignup === 'function'){
-          try{
-            await window.handleSignup({username, password});
-            return;
-          }catch(e){ err.textContent = e.message || 'Signup failed'; return; }
-        }
-
-        // Otherwise do best-effort API call using auth-config.json
-        const cfg = await loadConfig();
-        const apiBase = cfg.apiBase || '';
-        const signupUrls = [
-          apiBase + (cfg.endpoints && cfg.endpoints.users ? cfg.endpoints.users : '/api/users'),
-          apiBase + '/api/register'
-        ];
-
-        let created = false, createdResp = null;
-        for(const url of signupUrls){
-          try{
-            const r = await fetch(url, {
-              method:'POST',
-              headers:{ 'Content-Type':'application/json' },
-              body: JSON.stringify({ username, password })
-            });
-            if(!r.ok) continue;
-            createdResp = await r.json().catch(()=>null);
-            created = true;
-            break;
-          }catch(e){ continue; }
-        }
-
-         if(created && createdResp){
-          const token = createdResp.token || createdResp.accessToken;
-          const user = createdResp.user || { name: username, email: '' };
-
-          // set the same cookie your site uses
-          setLoginCookie(username);
-          if(token) localStorage.setItem('authToken', token);
-          localStorage.setItem('authUser', JSON.stringify(user));
-          window.location.href = '/';
-          return;
-        }
-
-        // Fallback dev create
-        console.warn('Signup endpoints unreachable — using local fallback create (dev only).');
-        localStorage.setItem('authToken', 'dev-token-' + Date.now());
-        localStorage.setItem('authUser', JSON.stringify({ name: username, email: '' }));
-        window.location.href = '/';
+      // Wire up UI toggle buttons
+      document.getElementById('showSignup').addEventListener('click', showSignup);
+      document.getElementById('showLogin').addEventListener('click', showLogin);
+      
+      // Close button redirects to home
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        window.location.href = '/horizonflight/home';
       });
 
-      // Initially show login form
+      // Form submissions
+      document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+      document.getElementById('signupFormElement').addEventListener('submit', handleSignup);
+
+      // Show login form initially
       showLogin();
     });
 
-  })();
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
-
 </body>
 </html>
